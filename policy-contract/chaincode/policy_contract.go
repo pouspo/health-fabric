@@ -44,6 +44,7 @@ func (p *PolicyContract) ReadPolicy(ctx contractapi.TransactionContextInterface,
 func (p *PolicyContract) AddPolicy(ctx contractapi.TransactionContextInterface, group, userId, mode string, field string) error {
 	policyExist, err := p.policyExist(ctx, group)
 	if err != nil {
+		fmt.Printf("Error: %v", err)
 		return err
 	}
 
@@ -51,6 +52,7 @@ func (p *PolicyContract) AddPolicy(ctx contractapi.TransactionContextInterface, 
 	if policyExist {
 		policy, err = p.ReadPolicy(ctx, group)
 		if err != nil {
+			fmt.Printf("Error: %v", err)
 			return err
 		}
 	} else {
@@ -64,7 +66,11 @@ func (p *PolicyContract) AddPolicy(ctx contractapi.TransactionContextInterface, 
 	accessDetail.add(mode, []string{field})
 
 	policy.PolicyMap[userId] = accessDetail
-	return policy.write(ctx)
+	err = policy.write(ctx)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	return err
 }
 
 // RemovePolicy remove policy from PolicyContract data. It creates a policy if not exist

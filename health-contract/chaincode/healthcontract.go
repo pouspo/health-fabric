@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"time"
 )
 
 // HealthContract provides functions for managing an Asset
@@ -14,52 +13,17 @@ type HealthContract struct {
 	contractapi.Contract
 }
 
+type Access struct {
+	Allowed bool     `json:"allowed"`
+	Read    []string `json:"read"`
+	Write   []string `json:"write"`
+}
+
 type UserData struct {
 	UserId         string                   `json:"user_id,omitempty"`
 	UserName       string                   `json:"user_name,omitempty" metadata:",optional"`
 	Dob            string                   `json:"dob,omitempty" metadata:",optional"`
 	DigagnosisList []map[string]interface{} `json:"digagnosis_list,omitempty" metadata:",optional"`
-}
-
-// InitHealthDataLedger adds a base set of assets to the ledger
-func (s *HealthContract) InitHealthDataLedger(ctx contractapi.TransactionContextInterface) error {
-	dataList := []UserData{
-		{
-			UserId:   "user_1",
-			UserName: "user_name_1",
-			Dob:      "01-12-1997",
-			DigagnosisList: []map[string]interface{}{
-				{
-					"created_at": time.Now().UTC().Unix(),
-					"diabetes":   false,
-					"bp":         "70/110",
-					"cancer":     true,
-					"HBsAg":      "-ve",
-				},
-				{
-					"created_at": time.Now().UTC().Unix(),
-					"diabetes":   true,
-					"bp":         "90/110",
-					"cancer":     true,
-					"HBsAg":      "+ve",
-				},
-			},
-		},
-	}
-
-	for _, data := range dataList {
-		assetJSON, err := json.Marshal(data)
-		if err != nil {
-			return err
-		}
-
-		err = ctx.GetStub().PutState(data.UserId, assetJSON)
-		if err != nil {
-			return fmt.Errorf("failed to put to world state. %v", err)
-		}
-	}
-
-	return nil
 }
 
 func (s *HealthContract) RegisterAsPatient(ctx contractapi.TransactionContextInterface, name, dob string) error {
@@ -91,12 +55,13 @@ func (s *HealthContract) RegisterAsPatient(ctx contractapi.TransactionContextInt
 // ReadUserData returns the user data stored in the world state with given id.
 // If you pass empty string, this will look for your userdata
 func (s *HealthContract) ReadUserData(ctx contractapi.TransactionContextInterface, userId string) (*UserData, error) {
+	requestUserId, err := s.getSubmittingClientIdentity(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if userId == "" {
-		var err error
-		userId, err = s.getSubmittingClientIdentity(ctx)
-		if err != nil {
-			return nil, err
-		}
+		userId = requestUserId
 	}
 
 	userData, err := s.readUserData(ctx, userId)
@@ -105,14 +70,36 @@ func (s *HealthContract) ReadUserData(ctx contractapi.TransactionContextInterfac
 	}
 
 	if userData == nil {
-		return nil, fmt.Errorf("the user %s does not exist", userId)
+		return nil, fmt.Errorf("user data not found")
+	}
+
+	if userId == requestUserId {
+		return userData, nil
+	}
+
+	access, err := s.getAccessDetails(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	if access == nil {
+		return nil, fmt.Errorf("you do not have access to this dataset")
+	}
+
+	for _, diagnostic := range userData.DigagnosisList {
+		for key, _ := range diagnostic {
+			if !inArray(access.Read, key) {
+				diagnostic[key] = nil
+			}
+		}
 	}
 
 	return userData, nil
 }
 
-func (s *HealthContract) readUserData(ctx contractapi.TransactionContextInterface, userId string) (*UserData, error) {
-	params := []string{"Test", "invincible_mode"}
+func (s *HealthContract) getAccessDetails(ctx contractapi.TransactionContextInterface, userId string) (*Access, error) {
+	// AccessList
+	params := []string{"AccessList", userId}
 	queryArgs := make([][]byte, len(params))
 	for i, arg := range params {
 		queryArgs[i] = []byte(arg)
@@ -122,14 +109,19 @@ func (s *HealthContract) readUserData(ctx contractapi.TransactionContextInterfac
 		return nil, fmt.Errorf("failed to query chaincode. Got error: %s", response.Payload)
 	}
 
-	fmt.Println("response.Payload")
-	fmt.Println(response.Payload)
+	var access Access
+	if err := json.Unmarshal(response.Payload, &access); err != nil {
+		return nil, err
+	}
 
-	var mapResp interface{}
-	_ = json.Unmarshal(response.Payload, &mapResp)
-	fmt.Println("mapResp")
-	fmt.Println(mapResp)
+	if !access.Allowed {
+		return nil, fmt.Errorf("you do not have access to this dataset")
+	}
 
+	return &access, nil
+}
+
+func (s *HealthContract) readUserData(ctx contractapi.TransactionContextInterface, userId string) (*UserData, error) {
 	assetJSON, err := ctx.GetStub().GetState(userId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
@@ -160,15 +152,6 @@ func (s *HealthContract) UserDataExists(ctx contractapi.TransactionContextInterf
 
 // UpdateUserData updates an existing user data in the world state with provided parameters.
 func (s *HealthContract) UpdateUserData(ctx contractapi.TransactionContextInterface, userData UserData) error {
-	existingUserData, err := s.readUserData(ctx, userData.UserId)
-	if err != nil {
-		return err
-	}
-
-	if existingUserData == nil {
-		return fmt.Errorf("the user %s does not exist", userData.UserId)
-	}
-
 	dataJSON, err := json.Marshal(userData)
 	if err != nil {
 		return err
@@ -179,12 +162,58 @@ func (s *HealthContract) UpdateUserData(ctx contractapi.TransactionContextInterf
 
 // CreateDiagnosis issues a new diagnosis to the world state with given details.
 func (s *HealthContract) CreateDiagnosis(ctx contractapi.TransactionContextInterface, userId string, data map[string]interface{}) error {
-	userData, err := s.ReadUserData(ctx, userId)
+	fmt.Println(data)
+
+	requestUserId, err := s.getSubmittingClientIdentity(ctx)
 	if err != nil {
 		return err
 	}
 
+	if userId == "" {
+		userId = requestUserId
+	}
+
+	userData, err := s.readUserData(ctx, userId)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("v1 ", userData)
+
+	fmt.Println("v2 ", data)
+
+	if userData == nil {
+		return fmt.Errorf("user data not found")
+	}
+
+	if requestUserId == userId {
+		userData.DigagnosisList = append(userData.DigagnosisList, data)
+
+		return s.UpdateUserData(ctx, *userData)
+	}
+
+	access, err := s.getAccessDetails(ctx, userId)
+	if err != nil {
+		return err
+	}
+
+	if access != nil {
+		return fmt.Errorf("you do not have access to this dataset")
+	}
+
+	fmt.Println("v3 ", access)
+
+	for key, _ := range data {
+		if !inArray(access.Write, key) {
+			data[key] = nil
+		}
+	}
+
+	fmt.Println("v4 ", data)
+
 	userData.DigagnosisList = append(userData.DigagnosisList, data)
+
+	fmt.Println("v5 ", userData)
 
 	return s.UpdateUserData(ctx, *userData)
 }
@@ -234,5 +263,9 @@ func (s *HealthContract) getSubmittingClientIdentityFull(ctx contractapi.Transac
 }
 
 func (s *HealthContract) getSubmittingClientIdentity(ctx contractapi.TransactionContextInterface) (string, error) {
+	return ctx.GetClientIdentity().GetID()
+}
+
+func (s *HealthContract) GetSubmittingClientIdentity(ctx contractapi.TransactionContextInterface) (string, error) {
 	return ctx.GetClientIdentity().GetID()
 }

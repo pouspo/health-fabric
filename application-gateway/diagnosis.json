@@ -1,0 +1,26 @@
+[
+  {
+    "age": 55,
+    "sugar_level": 15,
+    "HBsAg": "-ve",
+    "tv": false
+  },
+  {
+    "age": 30,
+    "sugar_level": 8,
+    "HBsAg": "+v2",
+    "tv": true
+  },
+  {
+    "age": 60,
+    "sugar_level": 22,
+    "HBsAg": "-v2",
+    "tv": false
+  },
+  {
+    "age": 75,
+    "sugar_level": 18,
+    "HBsAg": "-v2",
+    "tv": true
+  }
+]
