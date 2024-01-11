@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"time"
 )
@@ -88,7 +89,16 @@ func (s *HealthContract) RegisterAsPatient(ctx contractapi.TransactionContextInt
 }
 
 // ReadUserData returns the user data stored in the world state with given id.
+// If you pass empty string, this will look for your userdata
 func (s *HealthContract) ReadUserData(ctx contractapi.TransactionContextInterface, userId string) (*UserData, error) {
+	if userId == "" {
+		var err error
+		userId, err = s.getSubmittingClientIdentity(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	userData, err := s.readUserData(ctx, userId)
 	if err != nil {
 		return nil, err
@@ -102,12 +112,28 @@ func (s *HealthContract) ReadUserData(ctx contractapi.TransactionContextInterfac
 }
 
 func (s *HealthContract) readUserData(ctx contractapi.TransactionContextInterface, userId string) (*UserData, error) {
+	params := []string{"Test", "invincible_mode"}
+	queryArgs := make([][]byte, len(params))
+	for i, arg := range params {
+		queryArgs[i] = []byte(arg)
+	}
+	response := ctx.GetStub().InvokeChaincode("access-contract", queryArgs, "mychannel")
+	if response.Status != shim.OK {
+		return nil, fmt.Errorf("failed to query chaincode. Got error: %s", response.Payload)
+	}
+
+	fmt.Println("response.Payload")
+	fmt.Println(response.Payload)
+
+	var mapResp interface{}
+	_ = json.Unmarshal(response.Payload, &mapResp)
+	fmt.Println("mapResp")
+	fmt.Println(mapResp)
+
 	assetJSON, err := ctx.GetStub().GetState(userId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}
-
-	fmt.Println(assetJSON)
 
 	if assetJSON == nil {
 		return nil, nil

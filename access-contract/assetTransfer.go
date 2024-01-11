@@ -5,20 +5,20 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"github.com/pouspo/health-contract/chaincode"
+	"github.com/pouspo/access-contract/chaincode"
 	"log"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 func main() {
-	assetChaincode, err := contractapi.NewChaincode(&chaincode.HealthContract{})
+	assetChaincode, err := contractapi.NewChaincode(&chaincode.AccessContract{})
 	if err != nil {
-		log.Panicf("Error creating health-contract chaincode: %v", err)
+		log.Panicf("Error creating access-contract chaincode: %v", err)
 	}
 
 	if err := assetChaincode.Start(); err != nil {
-		log.Panicf("Error starting health-contract chaincode: %v", err)
+		log.Panicf("Error starting access-contract chaincode: %v", err)
 	}
 }
 
