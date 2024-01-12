@@ -197,7 +197,7 @@ func (s *HealthContract) CreateDiagnosis(ctx contractapi.TransactionContextInter
 		return err
 	}
 
-	if access != nil {
+	if access == nil {
 		return fmt.Errorf("you do not have access to this dataset")
 	}
 
