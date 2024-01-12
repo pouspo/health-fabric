@@ -13,3 +13,6 @@ system-genesis-block/*
 *.tar.gz
 log.txt
 .idea
+app
+.work
+.work.sum

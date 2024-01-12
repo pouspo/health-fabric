@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"strings"
+
+	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 // PolicyContract provides function for managing access contract policies.
