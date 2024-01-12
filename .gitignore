@@ -14,5 +14,5 @@ system-genesis-block/*
 log.txt
 .idea
 app
-.work
-.work.sum
+*.work
+*.work.sum
