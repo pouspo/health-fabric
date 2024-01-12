@@ -16,3 +16,4 @@ log.txt
 app
 *.work
 *.work.sum
+.vscode
