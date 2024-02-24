@@ -42,24 +42,16 @@ type Application struct {
 }
 
 func NewApplication(userName string) (*Application, error) {
+	if userName == "" {
+		return nil, fmt.Errorf("invalid user name")
+	}
 	// The gRPC client connection should be shared by all Gateway connections to this endpoint
 	clientConnection := newGrpcConnection()
 
 	var keyPath, certPath string
 
-	switch userName {
-	case alphaUser:
-		keyPath = alphaKeyPath
-		certPath = alphaCertPath
-	case betaUser:
-		keyPath = betaKeyPath
-		certPath = betaCertPath
-	case gamaUser:
-		keyPath = gamaKeyPath
-		certPath = gamaCertPath
-	default:
-		return nil, fmt.Errorf("invalid user name")
-	}
+	certPath = cryptoPath + fmt.Sprintf("/users/%s@org1.example.com/msp/signcerts/cert.pem", userName)
+	keyPath = cryptoPath + fmt.Sprintf("/users/%s@org1.example.com/msp/keystore/", userName)
 
 	var app Application
 	app.KeyPath = keyPath
