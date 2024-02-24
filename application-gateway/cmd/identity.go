@@ -5,6 +5,7 @@ import (
 	"github.com/pouspo/application-gateway/internal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 var (
@@ -27,18 +28,14 @@ var (
 		Use:   "register",
 		Short: "Register as a patient",
 		Run: func(cmd *cobra.Command, args []string) {
-			var dob string
-			if len(args) > 0 {
-				dob = args[0]
-			}
-			if err := internal.App.RegisterAsPatient(UserName, dob); err != nil {
+			if err := internal.App.RegisterAsPatient(UserName, ""); err != nil {
 				fmt.Printf("Could not register as a patient, error: %v", err)
 			}
 		},
 	}
 
-	DiagnosisCmd = &cobra.Command{
-		Use:   "create-diagnosis",
+	DummyDiagnosisCmd = &cobra.Command{
+		Use:   "create-dummy-diagnosis",
 		Short: "Insert Diagnosis Data",
 		Run: func(cmd *cobra.Command, args []string) {
 			var userName string
@@ -50,7 +47,47 @@ var (
 				userName = UserName
 			}
 
-			if err := internal.App.CreateDiagnosis(userName); err != nil {
+			if err := internal.App.CreateDummyDiagnosis(userName); err != nil {
+				fmt.Printf("Could not create diagnosis, error: %v", err)
+			}
+		},
+	}
+
+	CSVDiagnosisCmd = &cobra.Command{
+		Use:   "insert-csv-diagnosis",
+		Short: "Insert Diagnosis Data From CSV",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) < 9 {
+				fmt.Println("Not enough arguments")
+				return
+			}
+			var (
+				pregnancies, glucose, bloodPressure, skinThickness, insulin, BMI int64
+				Age, Outcome                                                     int64
+				DiabetesPedigreeFunction                                         float64
+			)
+
+			pregnancies, _ = strconv.ParseInt(args[0], 10, 32)
+			glucose, _ = strconv.ParseInt(args[1], 10, 32)
+			bloodPressure, _ = strconv.ParseInt(args[2], 10, 32)
+			skinThickness, _ = strconv.ParseInt(args[3], 10, 32)
+			insulin, _ = strconv.ParseInt(args[4], 10, 32)
+			BMI, _ = strconv.ParseInt(args[5], 10, 32)
+			DiabetesPedigreeFunction, _ = strconv.ParseFloat(args[6], 32)
+			Age, _ = strconv.ParseInt(args[7], 10, 32)
+			Outcome, _ = strconv.ParseInt(args[8], 10, 32)
+
+			if err := internal.App.InsertDiagnosisFromPimaDiabetesDataset(
+				pregnancies,
+				glucose,
+				bloodPressure,
+				skinThickness,
+				insulin,
+				BMI,
+				DiabetesPedigreeFunction,
+				Age,
+				Outcome,
+			); err != nil {
 				fmt.Printf("Could not create diagnosis, error: %v", err)
 			}
 		},

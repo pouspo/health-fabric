@@ -30,21 +30,14 @@ func (a *Application) RegisterAsPatient(userName, dob string) error {
 	return nil
 }
 
-func (a *Application) CreateDiagnosis(userName string) error {
-	var certPath string
-	switch userName {
-	case alphaUser:
-		certPath = alphaCertPath
-	case betaUser:
-		certPath = betaCertPath
-	case gamaUser:
-		certPath = gamaCertPath
-	default:
+func (a *Application) CreateDummyDiagnosis(userName string) error {
+	fmt.Println("User: ", userName)
+	if userName == "" {
 		return fmt.Errorf("invalid user name")
 	}
 
 	// Read the JSON file
-	data, err := os.ReadFile("diagnosis.json")
+	data, err := os.ReadFile("../application-gateway/diagnosis.json")
 	if err != nil {
 		return err
 	}
@@ -57,7 +50,7 @@ func (a *Application) CreateDiagnosis(userName string) error {
 		return err
 	}
 
-	userId, err := getUserId(certPath)
+	userId, err := getUserId(a.CertPath)
 	if err != nil {
 		return err
 	}
@@ -76,9 +69,56 @@ func (a *Application) CreateDiagnosis(userName string) error {
 	//dataStr := strings.Replace(str, `"`, `\"`, -1)
 
 	contract := a.network.GetContract(healthContract)
-	fmt.Printf("\n--> Submit Transaction: CreateDiagnosis, creates diagnosis \n")
+	fmt.Printf("\n--> Submit Transaction: CreateDummyDiagnosis, creates diagnosis \n")
 
-	_, err = contract.SubmitTransaction("CreateDiagnosis", userId, string(jsonData))
+	_, err = contract.SubmitTransaction("CreateDummyDiagnosis", userId, string(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to submit transaction: %w", err)
+	}
+
+	fmt.Printf("*** Transaction committed successfully\n")
+	return nil
+}
+func (a *Application) InsertDiagnosisFromPimaDiabetesDataset(
+	pregnancies,
+	glucose,
+	bloodPressure,
+	skinThickness,
+	insulin,
+	BMI int64,
+	DiabetesPedigreeFunction float64,
+	Age,
+	Outcome int64,
+) error {
+	userId, err := getUserId(a.CertPath)
+	if err != nil {
+		return err
+	}
+	fmt.Println(userId)
+
+	rand.Seed(time.Now().UnixNano())
+
+	var diagnosis = map[string]interface{}{
+		"pregnancies":                pregnancies,
+		"glucose":                    glucose,
+		"blood_pressure":             bloodPressure,
+		"skin_thickness":             skinThickness,
+		"insulin":                    insulin,
+		"bmi":                        BMI,
+		"diabetes_pedigree_function": DiabetesPedigreeFunction,
+		"age":                        Age,
+		"outcome":                    Outcome,
+	}
+
+	jsonData, err := json.Marshal(diagnosis)
+	if err != nil {
+		return fmt.Errorf("Error marshaling to JSON:", err)
+	}
+
+	contract := a.network.GetContract(healthContract)
+	fmt.Printf("\n--> Submit Transaction: CreateDummyDiagnosis, creates diagnosis \n")
+
+	_, err = contract.SubmitTransaction("CreateDummyDiagnosis", userId, string(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
@@ -88,19 +128,11 @@ func (a *Application) CreateDiagnosis(userName string) error {
 }
 
 func (a *Application) ReadUserData(userName string) error {
-	var certPath string
-	switch userName {
-	case alphaUser:
-		certPath = alphaCertPath
-	case betaUser:
-		certPath = betaCertPath
-	case gamaUser:
-		certPath = gamaCertPath
-	default:
+	if userName == "" {
 		return fmt.Errorf("invalid user name")
 	}
 
-	userId, err := getUserId(certPath)
+	userId, err := getUserId(a.CertPath)
 	if err != nil {
 		return err
 	}

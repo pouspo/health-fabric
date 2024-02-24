@@ -10,7 +10,7 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "application-gateway",
+		Use:   "gateway",
 		Short: "A Cli tool to interact with ABAC health data blockchain",
 	}
 )
@@ -34,8 +34,9 @@ func init() {
 	rootCmd.AddCommand(cmd.IdentityCommand)
 	rootCmd.AddCommand(cmd.PolicyCommand)
 	rootCmd.AddCommand(cmd.RegisterCmd)
-	rootCmd.AddCommand(cmd.DiagnosisCmd)
+	rootCmd.AddCommand(cmd.DummyDiagnosisCmd)
 	rootCmd.AddCommand(cmd.ReadCmd)
+	rootCmd.AddCommand(cmd.CSVDiagnosisCmd)
 
 }
 

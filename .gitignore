@@ -13,3 +13,4 @@ system-genesis-block/*
 *.tar.gz
 log.txt
 .idea
+.DS_Store
