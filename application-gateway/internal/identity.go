@@ -71,7 +71,7 @@ func (a *Application) CreateDummyDiagnosis(userName string) error {
 	contract := a.network.GetContract(healthContract)
 	fmt.Printf("\n--> Submit Transaction: CreateDummyDiagnosis, creates diagnosis \n")
 
-	_, err = contract.SubmitTransaction("CreateDummyDiagnosis", userId, string(jsonData))
+	_, err = contract.SubmitTransaction("CreateDiagnosis", userId, string(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
@@ -118,7 +118,7 @@ func (a *Application) InsertDiagnosisFromPimaDiabetesDataset(
 	contract := a.network.GetContract(healthContract)
 	fmt.Printf("\n--> Submit Transaction: CreateDummyDiagnosis, creates diagnosis \n")
 
-	_, err = contract.SubmitTransaction("CreateDummyDiagnosis", userId, string(jsonData))
+	_, err = contract.SubmitTransaction("CreateDiagnosis", userId, string(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
@@ -128,6 +128,7 @@ func (a *Application) InsertDiagnosisFromPimaDiabetesDataset(
 }
 
 func (a *Application) ReadUserData(userName string) error {
+	fmt.Println(userName)
 	if userName == "" {
 		return fmt.Errorf("invalid user name")
 	}

@@ -3,24 +3,28 @@
     "age": 55,
     "sugar_level": 15,
     "HBsAg": "-ve",
-    "tv": false
+    "tv": false,
+    "foo": "bar"
   },
   {
     "age": 30,
     "sugar_level": 8,
     "HBsAg": "+v2",
-    "tv": true
+    "tv": true,
+    "foo": "bar"
   },
   {
     "age": 60,
     "sugar_level": 22,
     "HBsAg": "-v2",
-    "tv": false
+    "tv": false,
+    "foo": "bar"
   },
   {
     "age": 75,
     "sugar_level": 18,
     "HBsAg": "-v2",
-    "tv": true
+    "tv": true,
+    "foo": "bar"
   }
 ]

@@ -55,6 +55,7 @@ func (s *HealthContract) RegisterAsPatient(ctx contractapi.TransactionContextInt
 // ReadUserData returns the user data stored in the world state with given id.
 // If you pass empty string, this will look for your userdata
 func (s *HealthContract) ReadUserData(ctx contractapi.TransactionContextInterface, userId string) (*UserData, error) {
+	fmt.Println("Reading user data, User: ", userId)
 	requestUserId, err := s.getSubmittingClientIdentity(ctx)
 	if err != nil {
 		return nil, err
