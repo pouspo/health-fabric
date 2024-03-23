@@ -18,3 +18,4 @@ app
 *.work.sum
 .vscode
 .DS_Store
+node_modules

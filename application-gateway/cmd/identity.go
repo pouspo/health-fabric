@@ -111,4 +111,15 @@ var (
 			}
 		},
 	}
+
+	ListenEventCmd = &cobra.Command{
+		Use:   "listen",
+		Short: "Listen Block Events",
+		Run: func(cmd *cobra.Command, args []string) {
+
+			if err := internal.App.ListenBlockEvents(); err != nil {
+				fmt.Printf("Could not listen, error: %v", err)
+			}
+		},
+	}
 )

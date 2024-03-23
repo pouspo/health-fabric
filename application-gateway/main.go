@@ -37,6 +37,7 @@ func init() {
 	rootCmd.AddCommand(cmd.DummyDiagnosisCmd)
 	rootCmd.AddCommand(cmd.ReadCmd)
 	rootCmd.AddCommand(cmd.CSVDiagnosisCmd)
+	rootCmd.AddCommand(cmd.ListenEventCmd)
 
 }
 

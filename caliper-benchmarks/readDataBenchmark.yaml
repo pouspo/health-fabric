@@ -1,0 +1,28 @@
+test:
+  name: read-health-data-benchmark
+  description: A health data read benchmark
+  workers:
+    type: local
+    number: 5
+  rounds:
+    - label: readUserData
+      description: Read User Data Benchmark
+      txNumber: 1000
+      rateControl:
+        { type: "linear-rate", opts: { startingTps: 50, finishingTps: 200 } }
+      workload:
+        module: workload/readData.js
+        arguments:
+          contractId: health-contract
+
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 4
+        containers:
+          [
+            "peer0.org1.example.com",
+            "peer0.org2.example.com",
+            "orderer.example.com",
+          ]
