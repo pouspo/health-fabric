@@ -41,6 +41,14 @@ type Application struct {
 	network *client.Network
 }
 
+func certFilePathByUserName(userName string) string {
+	return cryptoPath + fmt.Sprintf("/users/%s@org1.example.com/msp/signcerts/cert.pem", userName)
+}
+
+func keyFilePathByUserName(userName string) string {
+	return cryptoPath + fmt.Sprintf("/users/%s@org1.example.com/msp/keystore/", userName)
+}
+
 func NewApplication(userName string) (*Application, error) {
 	if userName == "" {
 		return nil, fmt.Errorf("invalid user name")
@@ -50,8 +58,8 @@ func NewApplication(userName string) (*Application, error) {
 
 	var keyPath, certPath string
 
-	certPath = cryptoPath + fmt.Sprintf("/users/%s@org1.example.com/msp/signcerts/cert.pem", userName)
-	keyPath = cryptoPath + fmt.Sprintf("/users/%s@org1.example.com/msp/keystore/", userName)
+	certPath = certFilePathByUserName(userName)
+	keyPath = keyFilePathByUserName(userName)
 
 	var app Application
 	app.KeyPath = keyPath

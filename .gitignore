@@ -19,3 +19,4 @@ app
 .vscode
 .DS_Store
 node_modules
+bin/*

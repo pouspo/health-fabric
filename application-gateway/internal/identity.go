@@ -133,12 +133,11 @@ func (a *Application) InsertDiagnosisFromPimaDiabetesDataset(
 }
 
 func (a *Application) ReadUserData(userName string) error {
-	fmt.Println(userName)
 	if userName == "" {
 		return fmt.Errorf("invalid user name")
 	}
 
-	userId, err := getUserId(a.CertPath)
+	userId, err := getUserId(certFilePathByUserName(userName))
 	if err != nil {
 		return err
 	}
