@@ -10,7 +10,6 @@ import (
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/pkg/errors"
 	"math/rand"
-	"os"
 	"time"
 )
 
@@ -26,56 +25,6 @@ func (a *Application) RegisterAsPatient(userName, dob string) error {
 	fmt.Printf("\n--> Submit Transaction: RegisterAsPatient, function registers himself on the ledger \n")
 
 	_, err := contract.SubmitTransaction("RegisterAsPatient", userName, dob)
-	if err != nil {
-		return fmt.Errorf("failed to submit transaction: %w", err)
-	}
-
-	fmt.Printf("*** Transaction committed successfully\n")
-	return nil
-}
-
-func (a *Application) CreateDummyDiagnosis(userName string) error {
-	fmt.Println("User: ", userName)
-	if userName == "" {
-		return fmt.Errorf("invalid user name")
-	}
-
-	// Read the JSON file
-	data, err := os.ReadFile("../application-gateway/diagnosis.json")
-	if err != nil {
-		return err
-	}
-
-	var diagnosisList []map[string]interface{}
-
-	// Unmarshal the JSON data into the slice
-	err = json.Unmarshal(data, &diagnosisList)
-	if err != nil {
-		return err
-	}
-
-	userId, err := getUserId(a.CertPath)
-	if err != nil {
-		return err
-	}
-
-	rand.Seed(time.Now().UnixNano())
-
-	diagnosis := diagnosisList[rand.Intn(len(diagnosisList))]
-
-	jsonData, err := json.Marshal(diagnosis)
-	if err != nil {
-		return fmt.Errorf("Error marshaling to JSON:", err)
-	}
-
-	// Print the JSON string
-	//str := string(jsonData)
-	//dataStr := strings.Replace(str, `"`, `\"`, -1)
-
-	contract := a.network.GetContract(healthContract)
-	fmt.Printf("\n--> Submit Transaction: CreateDummyDiagnosis, creates diagnosis %s\n", time.Now().UTC().Format(time.RFC3339))
-
-	_, err = contract.SubmitTransaction("CreateDiagnosis", userId, string(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
