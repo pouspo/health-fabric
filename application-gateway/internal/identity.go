@@ -9,7 +9,6 @@ import (
 	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/pkg/errors"
-	"math/rand"
 	"time"
 )
 
@@ -34,17 +33,31 @@ func (a *Application) RegisterAsPatient(userName, dob string) error {
 }
 
 func (a *Application) InsertDiagnosisData(param ...string) error {
-	if len(param) == 0 || len(param)%2 == 1 {
+	if len(param) <= 1 {
 		return fmt.Errorf("invalid parameter, pass them as pair of key value like [key1 value1 key2 value2 ... keyn valuen]")
 	}
 
-	userId, err := getUserId(a.CertPath)
-	if err != nil {
-		return err
+	var (
+		userId string
+		err    error
+		i      int
+	)
+
+	if len(param)%2 == 1 {
+		userId, err = getUserId(certFilePathByUserName(param[0]))
+		if err != nil {
+			return err
+		}
+		i = 1
+	} else {
+		userId, err = getUserId(a.CertPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	var diagnosis = map[string]interface{}{}
-	for i := 0; i < len(param); i += 2 {
+	for ; i < len(param); i += 2 {
 		diagnosis[param[i]] = param[i+1]
 	}
 
@@ -63,54 +76,6 @@ func (a *Application) InsertDiagnosisData(param ...string) error {
 
 	fmt.Printf("*** CreateDiagnosis, Transaction committed successfully\n")
 
-	return nil
-}
-
-func (a *Application) InsertDiagnosisFromPimaDiabetesDataset(
-	pregnancies,
-	glucose,
-	bloodPressure,
-	skinThickness,
-	insulin,
-	BMI int64,
-	DiabetesPedigreeFunction float64,
-	Age,
-	Outcome int64,
-) error {
-	userId, err := getUserId(a.CertPath)
-	if err != nil {
-		return err
-	}
-	fmt.Println(userId)
-
-	rand.Seed(time.Now().UnixNano())
-
-	var diagnosis = map[string]interface{}{
-		"pregnancies":                pregnancies,
-		"glucose":                    glucose,
-		"blood_pressure":             bloodPressure,
-		"skin_thickness":             skinThickness,
-		"insulin":                    insulin,
-		"bmi":                        BMI,
-		"diabetes_pedigree_function": DiabetesPedigreeFunction,
-		"age":                        Age,
-		"outcome":                    Outcome,
-	}
-
-	jsonData, err := json.Marshal(diagnosis)
-	if err != nil {
-		return fmt.Errorf("Error marshaling to JSON:", err)
-	}
-
-	contract := a.network.GetContract(healthContract)
-	fmt.Printf("\n--> Submit Transaction: CreateDummyDiagnosis, creates diagnosis \n")
-
-	_, err = contract.SubmitTransaction("CreateDiagnosis", userId, string(jsonData))
-	if err != nil {
-		return fmt.Errorf("failed to submit transaction: %w", err)
-	}
-
-	fmt.Printf("*** Transaction committed successfully\n")
 	return nil
 }
 
