@@ -35,7 +35,7 @@ func init() {
 	rootCmd.AddCommand(cmd.PolicyCommand)
 	rootCmd.AddCommand(cmd.RegisterCmd)
 	rootCmd.AddCommand(cmd.ReadCmd)
-	rootCmd.AddCommand(cmd.CSVDiagnosisCmd)
+	rootCmd.AddCommand(cmd.DiagnosisCmd)
 	rootCmd.AddCommand(cmd.ListenEventCmd)
 
 }

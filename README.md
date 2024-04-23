@@ -26,3 +26,8 @@ This command first registers the user in the network and then import the health 
 ```shell
 ./importCSVHealdData.sh dataset_v2.csv
 ```
+
+### Insert some dummy policy
+```shell
+gateway insert-policy
+```

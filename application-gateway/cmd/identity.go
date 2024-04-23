@@ -5,7 +5,6 @@ import (
 	"github.com/pouspo/application-gateway/internal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 var (
@@ -34,44 +33,9 @@ var (
 		},
 	}
 
-	CSVDiagnosisCmd = &cobra.Command{
-		Use:   "insert-csv-diagnosis",
-		Short: "Insert Diagnosis Data From CSV",
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) < 9 {
-				fmt.Println("Not enough arguments")
-				return
-			}
-			var (
-				pregnancies, glucose, bloodPressure, skinThickness, insulin, BMI int64
-				Age, Outcome                                                     int64
-				DiabetesPedigreeFunction                                         float64
-			)
-
-			pregnancies, _ = strconv.ParseInt(args[0], 10, 32)
-			glucose, _ = strconv.ParseInt(args[1], 10, 32)
-			bloodPressure, _ = strconv.ParseInt(args[2], 10, 32)
-			skinThickness, _ = strconv.ParseInt(args[3], 10, 32)
-			insulin, _ = strconv.ParseInt(args[4], 10, 32)
-			BMI, _ = strconv.ParseInt(args[5], 10, 32)
-			DiabetesPedigreeFunction, _ = strconv.ParseFloat(args[6], 32)
-			Age, _ = strconv.ParseInt(args[7], 10, 32)
-			Outcome, _ = strconv.ParseInt(args[8], 10, 32)
-
-			if err := internal.App.InsertDiagnosisFromPimaDiabetesDataset(
-				pregnancies,
-				glucose,
-				bloodPressure,
-				skinThickness,
-				insulin,
-				BMI,
-				DiabetesPedigreeFunction,
-				Age,
-				Outcome,
-			); err != nil {
-				fmt.Printf("Could not create diagnosis, error: %v", err)
-			}
-		},
+	DiagnosisCmd = &cobra.Command{
+		Use:   "diagnosis",
+		Short: "Manage Diagnosis",
 	}
 
 	ReadCmd = &cobra.Command{
@@ -104,3 +68,18 @@ var (
 		},
 	}
 )
+
+func init() {
+	DiagnosisCmd.AddCommand(&cobra.Command{
+		Use:   "insert",
+		Short: "Insert Diagnosis Data",
+		Long:  "Insert diagnosis data pass them as pair of key value like [key1 value1 key2 value2 ... keyn valuen]",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := internal.App.InsertDiagnosisData(args...); err != nil {
+				fmt.Printf("Could not create diagnosis, error: %v", err)
+				return err
+			}
+			return nil
+		},
+	})
+}

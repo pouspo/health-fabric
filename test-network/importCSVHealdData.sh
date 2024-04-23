@@ -35,5 +35,5 @@ do
     gateway -u "$username" register
 
     echo "Insert Data into ledger"
-    gateway -u "$username" insert-csv-diagnosis "$col1" "$col2" "$col3" "$col4" "$col5" "$col6" "$col7" "$col8" "$col9"
+    gateway -u "$username" diagnosis insert pregnancies "$col1" glucose "$col2" blood_pressure "$col3" skin_thickness "$col4" insulin "$col5" bmi "$col6" diabetes_pedigree_function "$col7" age "$col8" outcome "$col9"
 done < "$1"
