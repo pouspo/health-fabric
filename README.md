@@ -31,3 +31,8 @@ This command first registers the user in the network and then import the health 
 ```shell
 gateway insert-policy
 ```
+
+### Insert diagnosis for beta user by alpha user
+```shell
+gateway -u alpha diagnosis insert beta age 100
+```
