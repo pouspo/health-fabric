@@ -5,13 +5,13 @@
 curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
 ./install-fabric.sh docker samples binary
 ```
-
+## ./network.sh down
 ## How to deploy
 
 ### Build the gateway application
 ```shell
 cd application-gateway
-go build -o gateway . && mv gateway /Users/admin/go/src/github.com/health-fabric/bin/
+go build -o gateway . && mv gateway ../bin/
 ```
 
 ### Change directory to test-network
@@ -30,6 +30,7 @@ cd test-network
 ### Import dataset from csv
 This command first registers the user in the network and then import the health data.
 ```shell
+
 ./importCSVHealdData.sh dataset_v2.csv
 ```
 
@@ -42,3 +43,4 @@ gateway insert-policy
 ```shell
 gateway -u alpha diagnosis insert beta age 100
 ```
+## gateway -u beta read
