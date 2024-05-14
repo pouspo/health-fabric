@@ -33,6 +33,7 @@ func init() {
 
 	rootCmd.AddCommand(cmd.IdentityCommand)
 	rootCmd.AddCommand(cmd.PolicyCommand)
+	rootCmd.AddCommand(cmd.PolicyReadCommand)
 	rootCmd.AddCommand(cmd.RegisterCmd)
 	rootCmd.AddCommand(cmd.ReadCmd)
 	rootCmd.AddCommand(cmd.DiagnosisCmd)

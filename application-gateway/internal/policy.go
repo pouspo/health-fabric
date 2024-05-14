@@ -5,6 +5,28 @@ import (
 	"fmt"
 )
 
+func (a *Application) ReadPolicy(userName string) error {
+	if userName == "" {
+		return fmt.Errorf("invalid user name")
+	}
+
+	userId, err := getUserId(certFilePathByUserName(userName))
+	if err != nil {
+		return err
+	}
+
+	contract := a.network.GetContract(accessContract)
+
+	evaluateResult, err := contract.EvaluateTransaction("AccessList", userId)
+	if err != nil {
+		return fmt.Errorf("failed to call EvaluateTransaction: %w", err)
+	}
+	result := formatJSON(evaluateResult)
+
+	fmt.Printf("*** Result:%s\n", result)
+	return nil
+}
+
 func (a *Application) InsertDummyPolicy() error {
 	contract := a.network.GetContract(policyContract)
 	// AddPolicy(ctx contractapi.TransactionContextInterface, group, userId, mode string, field string)
