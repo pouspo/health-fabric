@@ -1,8 +1,11 @@
 package internal
 
 import (
+	"bytes"
 	"context"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
@@ -36,8 +39,41 @@ func getUserId(certPath string) (string, error) {
 		return "", err
 	}
 
-	id := fmt.Sprintf("x509::%s::%s", getDN(&certificate.Subject), getDN(&certificate.Issuer))
-	return base64.StdEncoding.EncodeToString([]byte(id)), nil
+	groupAttr, err := getGroupAttr(certificate)
+	if err != nil {
+		return "", err
+	}
+
+	id := fmt.Sprintf("x509::%s::%s::%s", getDN(&certificate.Subject), getDN(&certificate.Issuer), groupAttr)
+	encodedId := base64.StdEncoding.EncodeToString([]byte(id))
+
+	return encodedId, nil
+}
+
+func getGroupAttr(parsedCert *x509.Certificate) (string, error) {
+	type T struct {
+		Attrs struct {
+			Groups string `json:"groups"`
+		} `json:"attrs"`
+	}
+
+	var t T
+	var extValue []byte
+
+	// Finding the specified extension
+	for _, ext := range parsedCert.Extensions {
+		if ext.Id.String() == "1.2.3.4.5.6.7.8.1" {
+			extValue = ext.Value
+		}
+	}
+
+	if len(extValue) > 0 {
+		if err := json.NewDecoder(bytes.NewReader(extValue)).Decode(&t); err != nil {
+			return "", err
+		}
+	}
+
+	return t.Attrs.Groups, nil
 }
 
 // Evaluate a transaction to query ledger state.

@@ -264,9 +264,20 @@ func (s *HealthContract) getSubmittingClientIdentityFull(ctx contractapi.Transac
 }
 
 func (s *HealthContract) getSubmittingClientIdentity(ctx contractapi.TransactionContextInterface) (string, error) {
-	return ctx.GetClientIdentity().GetID()
+	certificate, err := ctx.GetClientIdentity().GetX509Certificate()
+	if err != nil {
+		return "", err
+	}
+
+	groupAttr, err := getGroupAttr(certificate)
+	if err != nil {
+		return "", err
+	}
+
+	id := fmt.Sprintf("x509::%s::%s::%s", getDN(&certificate.Subject), getDN(&certificate.Issuer), groupAttr)
+	return base64.StdEncoding.EncodeToString([]byte(id)), nil
 }
 
 func (s *HealthContract) GetSubmittingClientIdentity(ctx contractapi.TransactionContextInterface) (string, error) {
-	return ctx.GetClientIdentity().GetID()
+	return s.getSubmittingClientIdentityFull(ctx)
 }

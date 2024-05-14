@@ -1,11 +1,12 @@
 package chaincode
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/pouspo/access-contract/pkg"
 	"strings"
 )
 
@@ -25,21 +26,15 @@ type Access struct {
 }
 
 func (a *AccessContract) AccessList(ctx contractapi.TransactionContextInterface, userId string) (Access, error) {
-	cid := ctx.GetClientIdentity()
-	attrString, found, err := cid.GetAttributeValue("groups")
+	requestUserId, err := a.getSubmittingClientIdentity(ctx)
 	if err != nil {
 		return Access{}, err
 	}
 
-	if !found {
-		return Access{
-			Allowed: false,
-		}, nil
+	groups, err := getGroupsFromId(userId)
+	if err != nil {
+		return Access{}, err
 	}
-
-	fmt.Println(attrString)
-
-	groups := strings.Split(attrString, "-")
 	var policies []Policy
 	var readAccessList []string
 	var writeAccessList []string
@@ -67,15 +62,47 @@ func (a *AccessContract) AccessList(ctx contractapi.TransactionContextInterface,
 	}
 
 	for _, policy := range policies {
-		if access, ok := policy.PolicyMap[userId]; ok {
+		if access, ok := policy.PolicyMap[requestUserId]; ok {
 			readAccessList = append(readAccessList, access.Read...)
-			writeAccessList = append(readAccessList, access.Write...)
+			writeAccessList = append(writeAccessList, access.Write...)
 		}
 	}
 
 	return Access{
 		Allowed: true,
-		Read:    pkg.UniqueStrings(readAccessList),
-		Write:   pkg.UniqueStrings(writeAccessList),
+		Read:    UniqueStrings(readAccessList),
+		Write:   UniqueStrings(writeAccessList),
 	}, nil
+}
+
+func (a *AccessContract) getSubmittingClientIdentity(ctx contractapi.TransactionContextInterface) (string, error) {
+	certificate, err := ctx.GetClientIdentity().GetX509Certificate()
+	if err != nil {
+		return "", err
+	}
+
+	groupAttr, err := getGroupAttr(certificate)
+	if err != nil {
+		return "", err
+	}
+
+	id := fmt.Sprintf("x509::%s::%s::%s", getDN(&certificate.Subject), getDN(&certificate.Issuer), groupAttr)
+	return base64.StdEncoding.EncodeToString([]byte(id)), nil
+}
+
+func getGroupsFromId(id string) ([]string, error) {
+	decodeByte, err := base64.StdEncoding.DecodeString(id)
+	if err != nil {
+		return nil, err
+	}
+	decodedString := string(decodeByte)
+
+	targetUserAttrs := strings.Split(decodedString, "::")
+	if len(targetUserAttrs) == 0 {
+		return nil, errors.New("no attr found in the userid")
+	}
+	targetUserAttr := targetUserAttrs[len(targetUserAttrs)-1]
+
+	groups := strings.Split(targetUserAttr, "-")
+	return groups, nil
 }
