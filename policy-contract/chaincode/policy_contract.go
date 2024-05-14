@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
-
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -86,41 +84,6 @@ func (p *PolicyContract) RemovePolicy(ctx contractapi.TransactionContextInterfac
 
 	policy.PolicyMap[userId] = accessDetail
 	return policy.write(ctx)
-}
-
-// UserSpecificAccess finds the access list for a particular user for the groups.
-// Argument group is a string - you can pass multiple groups seperated by comma.
-func (p *PolicyContract) UserSpecificAccess(ctx contractapi.TransactionContextInterface, userID string, group string) (*Access, error) {
-	groups := strings.Split(group, ",")
-	if len(groups) == 0 {
-		return nil, nil
-	}
-
-	var policies []*Policy
-	for _, group := range groups {
-		policy, err := p.ReadPolicy(ctx, group)
-		if err != nil && !errors.Is(err, ErrNotFound) {
-			return nil, err
-		}
-
-		if policy != nil {
-			policies = append(policies, policy)
-		}
-	}
-
-	if len(policies) == 0 {
-		return nil, nil
-	}
-
-	var access Access
-	for _, policy := range policies {
-		if _access, ok := policy.PolicyMap[userID]; ok {
-			access.Read = append(access.Read, _access.Read...)
-			access.Write = append(access.Write, _access.Write...)
-		}
-	}
-
-	return &access, nil
 }
 
 // policyExist returns true when policy with given ID exists in world state
