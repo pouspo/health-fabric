@@ -7,12 +7,12 @@ import (
 )
 
 func main() {
-	assetChaincode, err := contractapi.NewChaincode(&chaincode.PolicyContract{})
+	policyChaincode, err := contractapi.NewChaincode(&chaincode.PolicyContract{})
 	if err != nil {
 		log.Panicf("Error creating policy-contract chaincode: %v", err)
 	}
 
-	if err := assetChaincode.Start(); err != nil {
+	if err := policyChaincode.Start(); err != nil {
 		log.Panicf("Error starting policy-contract chaincode: %v", err)
 	}
 }
