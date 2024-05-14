@@ -47,96 +47,81 @@ func (a *Application) InsertDummyPolicy() error {
 	}
 
 	// ----- Alpha, Group1 ----- //
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "read", "glucose")
+	if err != nil {
+		return fmt.Errorf("failed to submit transaction: %w", err)
+	}
+
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "read", "bmi")
+	if err != nil {
+		return fmt.Errorf("failed to submit transaction: %w", err)
+	}
+
 	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "read", "age")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "read", "sugar_level")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "write", "glucose")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "write", "age")
-	if err != nil {
-		return fmt.Errorf("failed to submit transaction: %w", err)
-	}
-
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "write", "sugar_level")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", alphaUserId, "write", "bmi")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
 	// ----- Beta, Group1 ----- //
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "read", "age")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "read", "glucose")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "read", "sugar_level")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "read", "bmi")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "write", "age")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "write", "glucose")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "write", "sugar_level")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", betaUserId, "write", "bmi")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
 	// ----- Gama, Group1 ----- //
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", gamaUserId, "read", "age")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", gamaUserId, "read", "glucose")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", gamaUserId, "read", "sugar_level")
-	if err != nil {
-		return fmt.Errorf("failed to submit transaction: %w", err)
-	}
-
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", gamaUserId, "write", "age")
-	if err != nil {
-		return fmt.Errorf("failed to submit transaction: %w", err)
-	}
-
-	_, err = contract.SubmitTransaction("AddPolicy", "group1", gamaUserId, "write", "sugar_level")
+	_, err = contract.SubmitTransaction("AddPolicy", "group1", gamaUserId, "read", "bmi")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
 	// ----- Alpha, Group2 ----- //
-	_, err = contract.SubmitTransaction("AddPolicy", "group2", alphaUserId, "read", "age")
+	_, err = contract.SubmitTransaction("AddPolicy", "group2", alphaUserId, "read", "skin_thickness")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group2", alphaUserId, "read", "sugar_level")
-	if err != nil {
-		return fmt.Errorf("failed to submit transaction: %w", err)
-	}
-
-	_, err = contract.SubmitTransaction("AddPolicy", "group2", alphaUserId, "write", "sugar_level")
+	_, err = contract.SubmitTransaction("AddPolicy", "group2", alphaUserId, "write", "skin_thickness")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
 	// ----- Beta, Group2 ----- //
-	_, err = contract.SubmitTransaction("AddPolicy", "group2", betaUserId, "read", "age")
+	_, err = contract.SubmitTransaction("AddPolicy", "group2", betaUserId, "read", "skin_thickness")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
 
-	_, err = contract.SubmitTransaction("AddPolicy", "group2", betaUserId, "read", "sugar_level")
-	if err != nil {
-		return fmt.Errorf("failed to submit transaction: %w", err)
-	}
-
-	_, err = contract.SubmitTransaction("AddPolicy", "group2", betaUserId, "write", "sugar_level")
+	_, err = contract.SubmitTransaction("AddPolicy", "group2", betaUserId, "write", "skin_thickness")
 	if err != nil {
 		return fmt.Errorf("failed to submit transaction: %w", err)
 	}
@@ -157,14 +142,14 @@ func (a *Application) InsertDummyPolicy() error {
 		Id: "group1",
 		PolicyMap: map[string]Access{
 			"alpha": {
-				Read:  []string{"age", "sugar_level"},
-				Write: []string{"age", "sugar_level"},
+				Read:  []string{"glucose", "bmi", "age"},
+				Write: []string{"glucose", "bmi"},
 			}, "beta": {
-				Read:  []string{"age", "sugar_level"},
-				Write: []string{"age", "sugar_level"},
+				Read:  []string{"glucose", "bmi"},
+				Write: []string{"glucose", "bmi"},
 			}, "gama": {
-				Read:  []string{"age", "sugar_level"},
-				Write: []string{"age", "sugar_level"},
+				Read:  []string{"glucose", "bmi"},
+				Write: []string{},
 			},
 		},
 	}
@@ -173,11 +158,11 @@ func (a *Application) InsertDummyPolicy() error {
 		Id: "group2",
 		PolicyMap: map[string]Access{
 			"alpha": {
-				Read:  []string{"age", "sugar_level"},
-				Write: []string{"sugar_level"},
+				Read:  []string{"skin_thickness"},
+				Write: []string{"skin_thickness"},
 			}, "beta": {
-				Read:  []string{"age", "sugar_level"},
-				Write: []string{"sugar_level"},
+				Read:  []string{"skin_thickness"},
+				Write: []string{"skin_thickness"},
 			},
 		},
 	}

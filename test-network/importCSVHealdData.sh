@@ -21,7 +21,7 @@ do
     username=$(echo -n "$col10" | tr -d '\r')
     echo "Register the user $username"
     set -x
-    fabric-ca-client register --id.name "$username" --id.secret "$username" --id.type client --id.attrs 'groups=group1:ecert' --tls.certfiles "${PWD}/organizations/fabric-ca/org1/ca-cert.pem"
+    fabric-ca-client register --id.name "$username" --id.secret "$username" --id.type client --id.attrs 'groups=group1-group2:ecert' --tls.certfiles "${PWD}/organizations/fabric-ca/org1/ca-cert.pem"
     { set +x; } 2>/dev/null
 
     echo "Enrolling the user $username"
