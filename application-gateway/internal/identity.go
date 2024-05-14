@@ -3,10 +3,8 @@ package internal
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/pkg/errors"
 	"time"
@@ -32,75 +30,6 @@ func (a *Application) RegisterAsPatient(userName, dob string) error {
 	return nil
 }
 
-func (a *Application) InsertDiagnosisData(param ...string) error {
-	if len(param) <= 1 {
-		return fmt.Errorf("invalid parameter, pass them as pair of key value like [key1 value1 key2 value2 ... keyn valuen]")
-	}
-
-	var (
-		userId string
-		err    error
-		i      int
-	)
-
-	if len(param)%2 == 1 {
-		userId, err = getUserId(certFilePathByUserName(param[0]))
-		if err != nil {
-			return err
-		}
-		i = 1
-	} else {
-		userId, err = getUserId(a.CertPath)
-		if err != nil {
-			return err
-		}
-	}
-
-	var diagnosis = map[string]interface{}{}
-	for ; i < len(param); i += 2 {
-		diagnosis[param[i]] = param[i+1]
-	}
-
-	jsonData, err := json.Marshal(diagnosis)
-	if err != nil {
-		return fmt.Errorf("error marshaling to json: %v", err)
-	}
-
-	contract := a.network.GetContract(healthContract)
-	fmt.Printf("\n--> Submit Transaction: CreateDiagnosis, creates diagnosis \n")
-
-	_, err = contract.SubmitTransaction("CreateDiagnosis", userId, string(jsonData))
-	if err != nil {
-		return fmt.Errorf("failed to submit CreateDiagnosis transaction: %w", err)
-	}
-
-	fmt.Printf("*** CreateDiagnosis, Transaction committed successfully\n")
-
-	return nil
-}
-
-func (a *Application) ReadUserData(userName string) error {
-	if userName == "" {
-		return fmt.Errorf("invalid user name")
-	}
-
-	userId, err := getUserId(certFilePathByUserName(userName))
-	if err != nil {
-		return err
-	}
-
-	contract := a.network.GetContract(healthContract)
-
-	evaluateResult, err := contract.EvaluateTransaction("ReadUserData", userId)
-	if err != nil {
-		return fmt.Errorf("failed to call EvaluateTransaction: %w", err)
-	}
-	result := formatJSON(evaluateResult)
-
-	fmt.Printf("*** Result:%s\n", result)
-	return nil
-}
-
 func getUserId(certPath string) (string, error) {
 	certificate, err := loadCertificate(certPath)
 	if err != nil {
@@ -112,17 +41,6 @@ func getUserId(certPath string) (string, error) {
 }
 
 // Evaluate a transaction to query ledger state.
-func readUserData(contract *client.Contract) {
-	fmt.Println("\n--> Evaluate Transaction: GetAllAssets, function returns all the current assets on the ledger")
-
-	evaluateResult, err := contract.EvaluateTransaction("ReadUserData", "")
-	if err != nil {
-		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
-	}
-	result := formatJSON(evaluateResult)
-
-	fmt.Printf("*** Result:%s\n", result)
-}
 
 func (a *Application) ListenBlockEvents() error {
 	blocks, err := a.network.BlockEvents(context.Background())
