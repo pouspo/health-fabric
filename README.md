@@ -39,8 +39,21 @@ This command first registers the user in the network and then import the health 
 gateway insert-policy
 ```
 
+### Read Data
+```shell
+gateway -u alpha read
+gateway -u beta read
+gateway -u gama read
+
+gateway -u alpha read beta
+gateway -u alpha read gama
+```
+
 ### Insert diagnosis for beta user by alpha user
 ```shell
-gateway -u alpha diagnosis insert beta age 100
+gateway -u alpha diagnosis insert beta glucose 120 bmi 10 insulin 5
+
+gateway -u beta diagnosis insert alpha glucose 100 bmi 5 insulin 4
+
+gateway -u gama diagnosis insert alpha glucose 100 bmi 5 insulin 4
 ```
-## gateway -u beta read
